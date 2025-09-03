@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+
+    <TimePicker
+        android:id="@+id/timePicker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/btnScheduleDaily"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Hẹn giờ hàng ngày" />
+
+
+    <Button
+        android:id="@+id/btnStartBackground"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bật kiểm tra nền (15p/lần)" />
+
+
+    <Button
+        android:id="@+id/btnTestAlarm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Test báo động" />
+
+
+</LinearLayout>
