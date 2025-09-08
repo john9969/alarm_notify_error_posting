@@ -1,4 +1,5 @@
 package com.example.alarmapi.ui
+import kotlinx.coroutines.delay
 
 import android.util.Log
 import android.Manifest
@@ -11,6 +12,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -18,9 +20,13 @@ import com.example.alarmapi.R
 import com.example.alarmapi.notify.NotificationHelper
 import com.example.alarmapi.util.Scheduler
 import com.example.alarmapi.worker.ApiCheckWorker
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
-
-
+import com.example.alarmapi.alarm.AlarmForegroundService
+import com.example.alarmapi.data.ApiClient
 class MainActivity : ComponentActivity() {
     private val requestNotifPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -39,29 +45,26 @@ class MainActivity : ComponentActivity() {
         }
 
 
-        val tp = findViewById<TimePicker>(R.id.timePicker)
-        tp.setIs24HourView(true)
-
-
-        findViewById<Button>(R.id.btnScheduleDaily).setOnClickListener {
-            val h = if (Build.VERSION.SDK_INT >= 23) tp.hour else tp.currentHour
-            val m = if (Build.VERSION.SDK_INT >= 23) tp.minute else tp.currentMinute
-            Scheduler.scheduleDaily(this, h, m)
-        }
-
 
         findViewById<Button>(R.id.btnStartBackground).setOnClickListener {
-// WorkManager: 15 phút/lần (tối thiểu). Nếu cần nhanh hơn → dùng server push hoặc Foreground service.
-            val work = PeriodicWorkRequestBuilder<ApiCheckWorker>(15, TimeUnit.MINUTES).build()
-            WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-                "api_check_periodic", ExistingPeriodicWorkPolicy.UPDATE, work
-            )
+//// WorkManager: 15 phút/lần (tối thiểu). Nếu cần nhanh hơn → dùng server push hoặc Foreground service.
+//            val work = PeriodicWorkRequestBuilder<ApiCheckWorker>(15, TimeUnit.MINUTES).build()
+//            WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+//                "api_check_periodic", ExistingPeriodicWorkPolicy.UPDATE, work
+//            )
+
+            AlarmForegroundService.start(this, hour = 20, minute = 40)
         }
 
 
         findViewById<Button>(R.id.btnTestAlarm).setOnClickListener {
-            Thread.sleep(3000) // chặn thread hiện tại 3 giây
-            NotificationHelper.showAlarm(this, "Test Cảnh báo", "Đây là thông báo thử!")
+            lifecycleScope.launch {
+                val r = withContext(Dispatchers.IO) { ApiClient.checkAlert() } // ĐẨY SANG IO Ở ĐIỂM GỌI
+
+                if (r.alert) {
+                    NotificationHelper.showAlarm(this@MainActivity, r.title, r.message)
+                }
+            }
         }
     }
 }

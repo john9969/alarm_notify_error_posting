@@ -10,6 +10,7 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import androidx.activity.ComponentActivity
+import androidx.core.app.NotificationManagerCompat
 import com.example.alarmapi.R
 
 
@@ -45,7 +46,10 @@ class FullScreenAlarmActivity : ComponentActivity() {
         Log.d("AlarmActivity", "ĐÃ MỞ MÀN BÁO THỨC + PHÁT CHUÔNG")
 
         findViewById<Button>(R.id.btnDismiss).setOnClickListener {
+            // Dừng chuông
             ringtone?.stop()
+            // Huỷ notification (id = 1002 phải khớp với NotificationHelper)
+            NotificationManagerCompat.from(this).cancel(1002)
             finish()
         }
     }
